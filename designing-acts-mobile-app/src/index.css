@@ -1,0 +1,625 @@
+@import url("https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Amiri", "Cormorant Garamond", Georgia, serif;
+  --font-display: "Cinzel", "Trajan Pro", serif;
+}
+
+/* ─── Dark theme (default) ───────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  /* Surfaces */
+  --color-ink: #0a0807;          /* page bg */
+  --color-onyx: #100d09;         /* modal/elevated bg */
+  --color-charcoal: #1a160f;     /* card */
+  --color-surface: #221c13;      /* nested */
+  --color-surface-2: #2b2418;
+
+  /* Lines */
+  --color-line: #3a2f1d;
+  --color-line-strong: #5a4a2a;
+
+  /* Gold ramp */
+  --color-gold-1: #f5d97a;       /* highlight */
+  --color-gold-2: #d4a017;       /* primary */
+  --color-gold-3: #b8861a;       /* deep */
+  --color-gold-4: #7a5a14;       /* shadow */
+
+  /* Text on surfaces — tuned for WCAG AA on charcoal */
+  --color-cream: #f7eaca;        /* primary text — slightly brighter */
+  --color-bronze: #c4a366;       /* secondary text — lifted for readability */
+  --color-muted: #ab9870;        /* faint text — still legible */
+
+  /* Accents */
+  --color-rust: #b85c2c;
+  --color-blood: #8b1e1e;
+
+  /* Functional */
+  --scrim: rgba(0, 0, 0, 0.7);
+  --scrim-soft: rgba(0, 0, 0, 0.4);
+  --tint: rgba(0, 0, 0, 0.4);
+  --tint-soft: rgba(0, 0, 0, 0.3);
+  --tint-xs: rgba(0, 0, 0, 0.2);
+  --on-accent: #0a0807;          /* text on gold buttons (always dark) */
+
+  /* Feature surfaces — kept dark in BOTH themes for illuminated-manuscript drama */
+  --color-feature: #0a0807;
+  --feature-fg: #f5e6c4;
+  --feature-fg-muted: #a78845;
+  --feature-accent: #f5d97a;
+  --feature-deep-gold: #b8861a;
+  --feature-pill: #1a160f;
+  --feature-line: #3a2f1d;
+  --feature-tint: rgba(0, 0, 0, 0.4);
+
+  /* Phone shell */
+  --shell-outer: #050402;
+  --shell-ring: #3a2f1d;
+  --shell-side: #1a160f;
+
+  /* Page background gradient stops */
+  --page-glow-1: rgba(212, 160, 23, 0.15);
+  --page-glow-2: rgba(184, 92, 44, 0.12);
+
+  color-scheme: dark;
+}
+
+/* ─── Light theme ─────────────────────────────────────────── */
+[data-theme="light"] {
+  /* Surfaces — warm parchment hierarchy */
+  --color-ink: #f5ead0;          /* page bg */
+  --color-onyx: #fdf6dd;         /* modal/elevated bg */
+  --color-charcoal: #fffaeb;     /* card (lightest) */
+  --color-surface: #fdf2cf;      /* nested */
+  --color-surface-2: #f8e6b2;
+
+  /* Lines */
+  --color-line: #d4b878;
+  --color-line-strong: #a78845;
+
+  /* Gold ramp — actually GOLDEN (warm, luminous, recognizable) */
+  --color-gold-1: #c4870e;       /* bright honey gold — accents/headlines */
+  --color-gold-2: #d4901a;       /* primary action gold — buttons */
+  --color-gold-3: #a06814;       /* eyebrow labels — still clearly golden */
+  --color-gold-4: #7a4e0c;
+
+  /* Text on cream surfaces — body stays dark for readability */
+  --color-cream: #1a1006;        /* primary text — near-black ink */
+  --color-bronze: #4a3010;       /* secondary — strong contrast */
+  --color-muted: #6b4818;        /* faint — readable, slightly warmer */
+
+  /* Accents */
+  --color-rust: #8b3c14;
+  --color-blood: #6b1414;
+
+  /* Functional */
+  --scrim: rgba(42, 28, 8, 0.4);
+  --scrim-soft: rgba(42, 28, 8, 0.25);
+  --tint: rgba(122, 90, 20, 0.12);
+  --tint-soft: rgba(122, 90, 20, 0.08);
+  --tint-xs: rgba(122, 90, 20, 0.04);
+  --on-accent: #0a0807;          /* still dark on gold */
+
+  /* Feature surfaces — in LIGHT mode they're warm cream, not dark */
+  --color-feature: #fffaeb;
+  --feature-fg: #1a1006;
+  --feature-fg-muted: #4a3010;
+  --feature-accent: #c4870e;
+  --feature-deep-gold: #a06814;
+  --feature-pill: #f5ead0;
+  --feature-line: #d4b878;
+  --feature-tint: rgba(122, 90, 20, 0.08);
+
+  /* Phone shell — brushed brass in light mode */
+  --shell-outer: #c9a050;
+  --shell-ring: #7a5a14;
+  --shell-side: #8a6818;
+
+  /* Page background tints */
+  --page-glow-1: rgba(212, 160, 23, 0.25);
+  --page-glow-2: rgba(184, 92, 44, 0.10);
+
+  color-scheme: light;
+}
+
+/* ───────────────────────────────────────────────────────────
+   LIGHT MODE — flip every hardcoded dark gradient to a soft
+   cream/warm palette so nothing in the app uses a dark surface.
+   ─────────────────────────────────────────────────────────── */
+
+/* Warm dark gradients (streak strips, feature CTAs, donate hero) → cream */
+[data-theme="light"] [class*="from-[#1a1209]"],
+[data-theme="light"] [class*="from-[#1a1006]"],
+[data-theme="light"] [class*="from-[#2a1206]"],
+[data-theme="light"] [class*="from-[#2a1a06]"],
+[data-theme="light"] [class*="from-[#3a2308]"],
+[data-theme="light"] [class*="from-[#3a1a0a]"],
+[data-theme="light"] [class*="from-[#3d2509]"] {
+  background-image: linear-gradient(135deg, #fffaeb 0%, #f5e6c4 50%, #fffaeb 100%) !important;
+}
+
+/* Pilgrimage "put off" rose gradient → light rose */
+[data-theme="light"] [class*="from-[#2a0a0a]"] {
+  background-image: linear-gradient(to bottom right, #fceee8, #f7d8cc) !important;
+}
+
+/* Pilgrimage "put on" olive gradient → light olive */
+[data-theme="light"] [class*="from-[#1a2a14]"],
+[data-theme="light"] [class*="from-[#1f2a14]"] {
+  background-image: linear-gradient(to bottom right, #f1f5e8, #d8e5c2) !important;
+}
+
+/* Wine theme → light rose */
+[data-theme="light"] [class*="from-[#3a1a0a]"] + *,
+[data-theme="light"] [class*="from-[#0f0f1a]"] {
+  background-image: linear-gradient(to bottom right, #eaedf5, #d4d8e8) !important;
+}
+
+/* Tailwind named-color gradients used by church themeColor (5 churches) */
+[data-theme="light"] [class*="from-indigo-700"] {
+  background-image: linear-gradient(to bottom right, #eaedf5, #d4d8e8) !important;
+}
+[data-theme="light"] [class*="from-emerald-700"] {
+  background-image: linear-gradient(to bottom right, #ecf5ec, #cce4cc) !important;
+}
+[data-theme="light"] [class*="from-amber-600"] {
+  background-image: linear-gradient(to bottom right, #fff4d6, #f5e0a0) !important;
+}
+[data-theme="light"] [class*="from-rose-600"] {
+  background-image: linear-gradient(to bottom right, #fceee8, #f7d8cc) !important;
+}
+
+/* Re-tint feature inner pills (those sat on a dark feature card before) */
+[data-theme="light"] [class*="bg-[var(--feature-tint)]"] {
+  background-color: rgba(122, 90, 20, 0.10) !important;
+}
+
+/* Text that was meant for dark backgrounds now needs dark color on cream.
+   These class strings appear on the formerly-dark gradient cards. */
+[data-theme="light"] [class*="text-[var(--color-cream)]/85"],
+[data-theme="light"] [class*="text-[var(--color-cream)]/90"],
+[data-theme="light"] [class*="text-[var(--feature-fg)]/85"],
+[data-theme="light"] [class*="text-[var(--feature-fg)]/90"] {
+  color: #2a1c08 !important;
+}
+
+html, body, #root { height: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--color-cream);
+  background: var(--color-ink);
+  transition: background-color 0.4s ease, color 0.4s ease;
+  font-weight: 400;
+}
+
+/* Form readability — single-line inputs visually center their content,
+   and all form text inherits the current theme's primary text color. */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="search"],
+input:not([type]) {
+  text-align: center;
+  line-height: 1.4;
+}
+
+textarea {
+  /* Textareas hold long content — left-aligned for readability,
+     but with comfortable line-height. */
+  text-align: left;
+  line-height: 1.55;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-muted);
+  opacity: 1;
+  font-style: italic;
+}
+
+/* Inputs and textareas should always use the cream/dark text color
+   for their theme — never inherit from a parent. */
+input,
+textarea {
+  color: var(--color-cream);
+}
+
+/* Light-mode body weight bump — Cinzel/Amiri read better with a touch
+   more weight on light backgrounds. */
+[data-theme="light"] body {
+  font-weight: 450;
+}
+[data-theme="light"] .font-serif {
+  font-weight: 500;
+}
+
+*::-webkit-scrollbar { width: 0; height: 0; }
+
+/* Semantic shorthand */
+.surface { background-color: var(--color-charcoal); }
+.surface-2 { background-color: var(--color-surface); }
+.surface-3 { background-color: var(--color-surface-2); }
+.text-gold { color: var(--color-gold-2); }
+.text-gold-light { color: var(--color-gold-1); }
+.text-cream { color: var(--color-cream); }
+.text-bronze { color: var(--color-bronze); }
+.text-muted { color: var(--color-muted); }
+.bg-gold { background-color: var(--color-gold-2); }
+
+/* Decorative pattern overlays */
+.pat-mudcloth {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(212,160,23,0.06) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(-45deg, rgba(212,160,23,0.06) 0 1px, transparent 1px 8px);
+}
+[data-theme="light"] .pat-mudcloth {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(122,90,20,0.08) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(-45deg, rgba(122,90,20,0.08) 0 1px, transparent 1px 8px);
+}
+
+/* Gold gradient text — slightly darker stops in light mode for contrast */
+.text-gold-grad {
+  background: linear-gradient(180deg, #f7e08b 0%, #d4a017 60%, #a07a18 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+[data-theme="light"] .text-gold-grad {
+  background: linear-gradient(180deg, #e0a414 0%, #c4870e 60%, #8a5a10 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Tiny ink shadow for crispness against cream backgrounds */
+  filter: drop-shadow(0 1px 0 rgba(60, 35, 5, 0.18));
+}
+
+/* Slight ink shadow on bright-gold headlines in light mode so they
+   pop crisply off the cream surface without losing the warm color */
+[data-theme="light"] [class*="text-[var(--color-gold-1)]"] {
+  text-shadow: 0 1px 0 rgba(60, 35, 5, 0.10);
+}
+
+/* ───────────────────────────────────────────────────────────
+   ANIMATIONS — all collapsed to 0.02ms (essentially instant)
+   The keyframes are kept so the system stays intact if motion
+   is re-enabled later, but every duration is forced near-zero.
+   ─────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  animation-duration: 0.02ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.02ms !important;
+}
+
+@keyframes shimmer        { 0%, 100% { opacity: 1; } }
+@keyframes fade-up        { from, to { opacity: 1; transform: none; } }
+@keyframes sheet-up       { from, to { opacity: 1; transform: none; } }
+@keyframes breathe        { 0%, 100% { transform: none; } }
+@keyframes float          { 0%, 100% { transform: none; } }
+@keyframes pulse-gold     { 0%, 100% { box-shadow: none; } }
+@keyframes flame-flicker  { 0%, 100% { transform: none; filter: none; } }
+@keyframes slow-spin      { from, to { transform: none; } }
+
+.shimmer { animation: none; opacity: 1; }
+
+/* ───────────────────────────────────────────────────────────
+   PAGE-OPEN ANIMATIONS — fire whenever any page mounts.
+   Durations are intentionally 0.02–0.05ms (essentially instant)
+   per design spec, but the keyframes ensure each element
+   announces its arrival rather than just popping into existence
+   from nowhere — gives the app a sense of life on every open.
+   ─────────────────────────────────────────────────────────── */
+
+@keyframes page-rise {
+  from { opacity: 0; transform: translate3d(0, 6px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes page-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes page-bloom {
+  from { opacity: 0; transform: scale(0.985); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes page-slide {
+  from { opacity: 0; transform: translate3d(-4px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* Every screen-level wrapper fades in instantly when its page opens.
+   The `pat-mudcloth` class is the marker every main screen uses. */
+.pat-mudcloth {
+  animation: page-fade 0.04ms ease-out !important;
+  animation-duration: 0.04ms !important;
+}
+
+/* Direct children of each screen "rise" in sequence — each at a
+   slightly different duration (0.02–0.05ms) to give a sense
+   of multiple things waking up together. */
+.pat-mudcloth > * {
+  animation: page-rise 0.03ms ease-out !important;
+  animation-duration: 0.03ms !important;
+  animation-fill-mode: backwards !important;
+}
+.pat-mudcloth > *:nth-child(1)  { animation-duration: 0.02ms !important; animation-delay: 0.02ms !important; }
+.pat-mudcloth > *:nth-child(2)  { animation-duration: 0.03ms !important; animation-delay: 0.02ms !important; }
+.pat-mudcloth > *:nth-child(3)  { animation-duration: 0.04ms !important; animation-delay: 0.03ms !important; }
+.pat-mudcloth > *:nth-child(4)  { animation-duration: 0.04ms !important; animation-delay: 0.03ms !important; }
+.pat-mudcloth > *:nth-child(5)  { animation-duration: 0.05ms !important; animation-delay: 0.04ms !important; }
+.pat-mudcloth > *:nth-child(6)  { animation-duration: 0.05ms !important; animation-delay: 0.04ms !important; }
+.pat-mudcloth > *:nth-child(7)  { animation-duration: 0.03ms !important; animation-delay: 0.05ms !important; }
+.pat-mudcloth > *:nth-child(8)  { animation-duration: 0.04ms !important; animation-delay: 0.05ms !important; }
+.pat-mudcloth > *:nth-child(n+9) {
+  animation-duration: 0.05ms !important;
+  animation-delay: 0.05ms !important;
+}
+
+/* Cards inside a page "bloom" in (scale + fade) on mount.
+   Targets every rounded-3xl card that sits inside a mud-cloth page. */
+.pat-mudcloth [class*="rounded-3xl"] {
+  animation: page-bloom 0.04ms ease-out !important;
+  animation-duration: 0.04ms !important;
+  animation-fill-mode: backwards !important;
+}
+
+/* Modal bottom sheets get a brief slide-in on open */
+[class*="rounded-t-3xl"] {
+  animation: page-slide 0.05ms ease-out !important;
+  animation-duration: 0.05ms !important;
+  animation-fill-mode: backwards !important;
+}
+
+/* Bottom nav reveals its tabs at varied micro-durations */
+nav > div > button {
+  animation: page-rise 0.03ms ease-out !important;
+  animation-duration: 0.03ms !important;
+  animation-fill-mode: backwards !important;
+}
+nav > div > button:nth-child(1) { animation-duration: 0.02ms !important; }
+nav > div > button:nth-child(2) { animation-duration: 0.03ms !important; }
+nav > div > button:nth-child(3) { animation-duration: 0.04ms !important; }
+nav > div > button:nth-child(4) { animation-duration: 0.05ms !important; }
+nav > div > button:nth-child(5) { animation-duration: 0.04ms !important; }
+nav > div > button:nth-child(6) { animation-duration: 0.03ms !important; }
+nav > div > button:nth-child(7) { animation-duration: 0.02ms !important; }
+
+/* ───────────────────────────────────────────────────────────
+   ACTS GLARE — a soft light sweep across the ACTS wordmark
+   on the welcome page. Periodic, gentle, repeating.
+   ─────────────────────────────────────────────────────────── */
+
+@keyframes acts-glare {
+  0%   { background-position: -140% 0, 0 0; }
+  28%  { background-position: 240% 0, 0 0; }   /* sweep happens in first ~28% of the cycle */
+  100% { background-position: 240% 0, 0 0; }   /* hold before next sweep */
+}
+
+.acts-shimmer {
+  background:
+    linear-gradient(
+      110deg,
+      transparent 25%,
+      rgba(255, 250, 220, 0.92) 50%,
+      transparent 75%
+    ) -140% 0 / 200% 100% no-repeat,
+    linear-gradient(180deg, #f7e08b 0%, #d4a017 60%, #a07a18 100%);
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: acts-glare 5s ease-in-out infinite !important;
+  animation-duration: 5s !important;
+}
+
+[data-theme="light"] .acts-shimmer {
+  background:
+    linear-gradient(
+      110deg,
+      transparent 25%,
+      rgba(255, 250, 220, 0.95) 50%,
+      transparent 75%
+    ) -140% 0 / 200% 100% no-repeat,
+    linear-gradient(180deg, #e8aa20 0%, #c4870e 60%, #8a5a10 100%);
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 1px 0 rgba(60, 35, 5, 0.15));
+}
+
+/* ───────────────────────────────────────────────────────────
+   PROGRESS REVEAL ANIMATIONS — explicit exceptions to the
+   "everything is instant" global rule. These intentionally
+   show progress filling in when a page opens.
+   ─────────────────────────────────────────────────────────── */
+
+/* (1) Progress bars: every inner fill div (gold bar with inline width)
+       grows from 0 to its set width on mount. */
+@keyframes progress-fill-in {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+[style*="width:"][class*="bg-[var(--color-gold-2)]"][class*="h-full"][class*="rounded-full"] {
+  animation: progress-fill-in 1.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  animation-fill-mode: backwards !important;
+  animation-duration: 1.4s !important;
+  transform-origin: left center;
+}
+
+/* (2) "This week" day strip on the Home page — each of the 7 day
+       boxes pops in sequence to dramatize the week's progress. */
+@keyframes day-cell-pop {
+  0%   { opacity: 0; transform: scale(0.55) translateY(6px); }
+  60%  { opacity: 1; transform: scale(1.06) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.day-stagger > * {
+  animation: day-cell-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) !important;
+  animation-fill-mode: backwards !important;
+  animation-duration: 0.45s !important;
+}
+.day-stagger > *:nth-child(1) { animation-delay: 0.05s !important; }
+.day-stagger > *:nth-child(2) { animation-delay: 0.13s !important; }
+.day-stagger > *:nth-child(3) { animation-delay: 0.21s !important; }
+.day-stagger > *:nth-child(4) { animation-delay: 0.29s !important; }
+.day-stagger > *:nth-child(5) { animation-delay: 0.37s !important; }
+.day-stagger > *:nth-child(6) { animation-delay: 0.45s !important; }
+.day-stagger > *:nth-child(7) { animation-delay: 0.53s !important; }
+
+/* (3) "Last 4 weeks" heatmap on the Me page — 28 cells fade up
+       in a fast sweep from left to right. */
+@keyframes heatmap-cell-in {
+  from { opacity: 0; transform: scale(0); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.heatmap-stagger > * {
+  animation: heatmap-cell-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  animation-fill-mode: backwards !important;
+  animation-duration: 0.32s !important;
+  transform-origin: center;
+}
+.heatmap-stagger > *:nth-child(1)  { animation-delay: 0.04s !important; }
+.heatmap-stagger > *:nth-child(2)  { animation-delay: 0.07s !important; }
+.heatmap-stagger > *:nth-child(3)  { animation-delay: 0.10s !important; }
+.heatmap-stagger > *:nth-child(4)  { animation-delay: 0.13s !important; }
+.heatmap-stagger > *:nth-child(5)  { animation-delay: 0.16s !important; }
+.heatmap-stagger > *:nth-child(6)  { animation-delay: 0.19s !important; }
+.heatmap-stagger > *:nth-child(7)  { animation-delay: 0.22s !important; }
+.heatmap-stagger > *:nth-child(8)  { animation-delay: 0.25s !important; }
+.heatmap-stagger > *:nth-child(9)  { animation-delay: 0.28s !important; }
+.heatmap-stagger > *:nth-child(10) { animation-delay: 0.31s !important; }
+.heatmap-stagger > *:nth-child(11) { animation-delay: 0.34s !important; }
+.heatmap-stagger > *:nth-child(12) { animation-delay: 0.37s !important; }
+.heatmap-stagger > *:nth-child(13) { animation-delay: 0.40s !important; }
+.heatmap-stagger > *:nth-child(14) { animation-delay: 0.43s !important; }
+.heatmap-stagger > *:nth-child(15) { animation-delay: 0.46s !important; }
+.heatmap-stagger > *:nth-child(16) { animation-delay: 0.49s !important; }
+.heatmap-stagger > *:nth-child(17) { animation-delay: 0.52s !important; }
+.heatmap-stagger > *:nth-child(18) { animation-delay: 0.55s !important; }
+.heatmap-stagger > *:nth-child(19) { animation-delay: 0.58s !important; }
+.heatmap-stagger > *:nth-child(20) { animation-delay: 0.61s !important; }
+.heatmap-stagger > *:nth-child(21) { animation-delay: 0.64s !important; }
+.heatmap-stagger > *:nth-child(22) { animation-delay: 0.67s !important; }
+.heatmap-stagger > *:nth-child(23) { animation-delay: 0.70s !important; }
+.heatmap-stagger > *:nth-child(24) { animation-delay: 0.73s !important; }
+.heatmap-stagger > *:nth-child(25) { animation-delay: 0.76s !important; }
+.heatmap-stagger > *:nth-child(26) { animation-delay: 0.79s !important; }
+.heatmap-stagger > *:nth-child(27) { animation-delay: 0.82s !important; }
+.heatmap-stagger > *:nth-child(28) { animation-delay: 0.85s !important; }
+
+/* ───────────────────────────────────────────────────────────
+   3D DEPTH — every surface floats above the background
+   Dark mode uses deep black shadows + a warm gold ambient glow.
+   Light mode uses warm bronze shadows so cards lift off parchment.
+   ─────────────────────────────────────────────────────────── */
+
+/* CARDS (large) — gentler floating shadow, still has depth */
+[class*="rounded-3xl"] {
+  box-shadow:
+    0 1px 0 rgba(245, 217, 122, 0.04) inset,
+    0 1px 2px rgba(0, 0, 0, 0.22),
+    0 4px 10px -2px rgba(0, 0, 0, 0.18),
+    0 10px 20px -6px rgba(0, 0, 0, 0.12);
+}
+
+/* Smaller surfaces — barely-there elevation */
+[class*="rounded-2xl"]:not([class*="rounded-3xl"]) {
+  box-shadow:
+    0 1px 0 rgba(245, 217, 122, 0.03) inset,
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    0 3px 6px -1px rgba(0, 0, 0, 0.10);
+}
+
+/* LIGHT MODE — soft warm shadows so cards lift gently off parchment */
+[data-theme="light"] [class*="rounded-3xl"] {
+  box-shadow:
+    0 1px 0 rgba(255, 250, 220, 0.6) inset,
+    0 1px 2px rgba(90, 60, 10, 0.08),
+    0 4px 10px -2px rgba(90, 60, 10, 0.06),
+    0 10px 20px -6px rgba(90, 60, 10, 0.04);
+}
+[data-theme="light"] [class*="rounded-2xl"]:not([class*="rounded-3xl"]) {
+  box-shadow:
+    0 1px 0 rgba(255, 250, 220, 0.5) inset,
+    0 1px 2px rgba(90, 60, 10, 0.06),
+    0 3px 6px -1px rgba(90, 60, 10, 0.04);
+}
+
+/* GOLD BUTTONS — clean emboss, minimal glow */
+[class*="bg-[var(--color-gold-2)]"] {
+  box-shadow:
+    0 1px 0 rgba(255, 245, 195, 0.4) inset,
+    0 -1px 2px rgba(100, 65, 8, 0.25) inset,
+    0 1px 2px rgba(60, 40, 8, 0.25),
+    0 3px 6px -2px rgba(212, 160, 23, 0.18);
+}
+
+/* Gold button press — subtle sink */
+button[class*="bg-[var(--color-gold-2)]"]:active {
+  transform: translate3d(0, 1px, 0) scale(0.98);
+  box-shadow:
+    0 1px 0 rgba(255, 245, 195, 0.3) inset,
+    0 1px 1px rgba(60, 40, 8, 0.25);
+}
+
+/* FAB — visible lift, no halo */
+button[class*="h-14"][class*="w-14"][class*="rounded-full"] {
+  box-shadow:
+    0 1px 0 rgba(255, 245, 195, 0.4) inset,
+    0 -1px 2px rgba(100, 65, 8, 0.25) inset,
+    0 2px 4px rgba(60, 40, 8, 0.3),
+    0 6px 14px -2px rgba(212, 160, 23, 0.25),
+    0 14px 28px -8px rgba(212, 160, 23, 0.15);
+}
+
+/* PHONE FRAME — gentle device shadow */
+.phone-frame-outer {
+  box-shadow:
+    0 1px 0 rgba(245, 217, 122, 0.12) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.4) inset,
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    0 14px 30px -6px rgba(0, 0, 0, 0.35);
+}
+
+/* INPUT FOCUS — minimal gold ring, no glow halo */
+input:focus,
+textarea:focus {
+  box-shadow: 0 0 0 1.5px var(--color-gold-2) !important;
+  outline: none;
+}
+
+/* TOAST — subtle lift */
+.pointer-events-auto[class*="rounded-full"][class*="text-[var(--feature-accent)]"] {
+  box-shadow:
+    0 1px 0 rgba(245, 217, 122, 0.12) inset,
+    0 4px 12px -2px rgba(0, 0, 0, 0.35),
+    0 8px 20px -6px rgba(0, 0, 0, 0.2);
+}
+
+/* WORLD MAP — keeps recessed look but softer */
+[class*="rounded-3xl"][class*="bg-[#0a0807]"] {
+  box-shadow:
+    0 0 0 1px rgba(245, 217, 122, 0.08) inset,
+    0 3px 6px rgba(0, 0, 0, 0.4) inset,
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 4px 10px -2px rgba(0, 0, 0, 0.18);
+}
+
+/* GRADIENT FEATURE BANNERS */
+[class*="bg-gradient-to-br"] {
+  box-shadow:
+    0 1px 0 rgba(255, 240, 180, 0.12) inset,
+    0 1px 2px rgba(0, 0, 0, 0.22),
+    0 4px 10px -2px rgba(0, 0, 0, 0.16),
+    0 10px 20px -6px rgba(0, 0, 0, 0.10);
+}
+
+/* Theme transition smoothing for cards */
+.surface, [class*="bg-[var(--color-"] {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
