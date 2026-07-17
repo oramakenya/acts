@@ -1,0 +1,24 @@
+// src/data/theology.ts
+
+export type Source = {
+  author: "John Piper" | "Ravi Zacharias" | "James Buchanan";
+  topic: string;
+  excerpt: string;
+  reference: string;
+};
+
+export const theologyLibrary: Source[] = [
+  {
+    author: "John Piper",
+    topic: "Anxiety",
+    excerpt: "God's peace is not the absence of trouble, but the presence of His sovereignty.",
+    reference: "Philippians 4:6-7"
+  },
+  {
+    author: "Ravi Zacharias",
+    topic: "Doubt",
+    excerpt: "The fact that you have a question is not a sign of a weak faith, but a sign of a mind seeking truth.",
+    reference: "Matthew 7:7"
+  },
+  // Add as many entries as you want here!
+];

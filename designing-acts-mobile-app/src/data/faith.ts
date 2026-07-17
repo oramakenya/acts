@@ -231,3 +231,41 @@ export const communityStatuses: CommunityStatusOption[] = [
       "You lead a community. ACTS gives you tools to shepherd them well — sermon notes, group challenges, members-only prayer, mission planning.",
   },
 ];
+
+// ─────────────────────────────────────────────────────────
+// LANGUAGE LEVEL — reading experience complexity
+// ─────────────────────────────────────────────────────────
+
+export type LanguageLevel = "simple" | "standard" | "theological";
+
+export type LanguageLevelOption = {
+  id: LanguageLevel;
+  emoji: string;
+  label: string;
+  short: string;
+  description: string;
+};
+
+export const languageLevels: LanguageLevelOption[] = [
+  {
+    id: "simple",
+    emoji: "🌱",
+    label: "Plain & Clear",
+    short: "Everyday language, easy to read.",
+    description: "We will keep theological terms simple and focus on clear, actionable meaning."
+  },
+  {
+    id: "standard",
+    emoji: "🌿",
+    label: "Standard",
+    short: "A mix of everyday language and church terms.",
+    description: "The default ACTS experience. We use traditional terms but explain the complex ones."
+  },
+  {
+    id: "theological",
+    emoji: "🌳",
+    label: "Deep & Academic",
+    short: "Rich theological terms and historical depth.",
+    description: "We won't hold back. Expect historical context, original Greek/Hebrew references, and deep theological terminology."
+  }
+];

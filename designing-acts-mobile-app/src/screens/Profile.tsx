@@ -1,3 +1,37 @@
+// 1. Import your new card component
+import { ProfileDropdown } from "../components/ProfileDropdown";
+
+import { JourneyContentCard } from "../components/JourneyContentCard"; 
+
+export function JourneyPage() {
+  return (
+    <div className="flex h-full flex-col pat-mudcloth overflow-y-auto">
+      
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 backdrop-blur-md bg-[var(--color-bg)]/80">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[var(--feature-deep-gold)]">
+            ACTS
+          </p>
+          <h1 className="font-display text-[28px] leading-none text-gold-grad">
+            Your Journey
+          </h1>
+        </div>
+        
+        {/* The Dropdown Menu */}
+        <ProfileDropdown />
+      </header>
+
+      {/* Main Page Content Area */}
+      <main className="flex-1 px-6 pb-20 pt-4">
+        
+        {/* THIS is where we use the component! The yellow line will disappear now. */}
+        <JourneyContentCard />
+
+      </main>
+    </div>
+  );
+}
 import { useState } from "react";
 import { badges, type GeoPin } from "../data/content";
 import { FlameIcon, HandsIcon, BookIcon, CheckIcon, BellIcon, LockIcon, CloseIcon } from "../components/icons";
@@ -32,6 +66,7 @@ type Props = {
   onToggleShareLocation: () => void;
   onToggleShowOnGlobe: () => void;
   onResetOnboarding: () => void;
+  navigate: (screen: string) => void;
 };
 
 export function Profile({
@@ -48,6 +83,7 @@ export function Profile({
   onToggleShareLocation,
   onToggleShowOnGlobe,
   onResetOnboarding,
+  navigate,
 }: Props) {
   const [picking, setPicking] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
@@ -251,22 +287,40 @@ export function Profile({
 
       {/* Your walk — faith profile from onboarding (editable) */}
       <div className="relative mx-6 mt-4 overflow-hidden rounded-3xl bg-[var(--color-charcoal)] p-4 shadow-sm ring-1 ring-[var(--color-line)]">
-        <AdinkraDotsBg />
-        <div className="relative flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-gold-3)]">
-            Your walk
-          </p>
-          <button
-            onClick={() => {
-              onResetOnboarding();
-              toast("Retaking the welcome — your data stays");
-            }}
-            className="text-[10px] font-medium text-[var(--color-gold-3)] underline"
-          >
-            Retake welcome
-          </button>
+        
+        {/* FIX 1: Wrap the background asset in a pointer-events-none layer so it cannot swallow interactions */}
+        <div className="pointer-events-none absolute inset-0 select-none">
+          <AdinkraDotsBg />
         </div>
-        <div className="relative mt-2 space-y-1.5">
+
+        {/* FIX 2: Explicitly isolate the header elements into an isolated interactive stacking context */}
+        <div className="relative z-20 flex items-center justify-between border-b border-[var(--color-line)] pb-3 mb-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-gold-3)]">
+              Your walk
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                onResetOnboarding();
+                toast("Retaking the welcome — your data stays");
+              }}
+              className="relative z-30 cursor-pointer text-[10px] font-medium text-[var(--color-gold-3)] underline"
+            >
+              Reset Onboarding
+            </button>
+
+            <button
+              onClick={() => navigate("admin")}
+              className="relative z-30 cursor-pointer rounded-full bg-[var(--color-gold-2)] px-3 py-1 text-[11px] font-bold tracking-wide text-[var(--on-accent)] shadow-md hover:brightness-110 active:scale-95 transition-all"
+            >
+              Console ⚙️
+            </button>
+          </div>
+        </div>
+        
+        <div className="relative space-y-1.5">
           <FaithRow
             emoji={faithOpt?.emoji ?? "🌱"}
             eyebrow="Where I am"

@@ -1,10 +1,6 @@
-import { useState } from "react";
-import {
-  verseOfTheDay,
-  dailyChallenge,
-  weeklyTheme,
-  churchPulse,
-} from "../data/content";
+import { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient";
+import { weeklyTheme } from "../data/content";
 import { FlameIcon, ArrowRight, CheckIcon, QuoteIcon, BellIcon, CloseIcon } from "../components/icons";
 import {
   ArabesqueDivider,
@@ -46,6 +42,41 @@ export function Dashboard({
   });
   const todayShort = new Date().toLocaleDateString("en-US", { weekday: "short" });
   const toast = useToast();
+  // --- NEW SUPABASE CODE ---
+  const [dbVerse, setDbVerse] = useState<any>(null);
+  const [dbChallenge, setDbChallenge] = useState<any>(null);
+  const [dbPulse, setDbPulse] = useState<any>(null);
+
+useEffect(() => {
+    async function fetchLiveDashboard() {
+      // 1. Fetch the verse
+      const { data: verseData } = await supabase
+        .from('daily_content')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (verseData) setDbVerse(verseData);
+
+      // 2. Fetch the challenge
+      const { data: challengeData } = await supabase
+        .from('daily_challenges')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (challengeData) setDbChallenge(challengeData);
+
+      // 3. Fetch the church pulse
+      const { data: pulseData } = await supabase
+        .from('church_pulse')
+        .select('*')
+        .limit(1)
+        .single();
+      if (pulseData) setDbPulse(pulseData);
+    }
+    fetchLiveDashboard();
+  }, []);
   const [showNotifs, setShowNotifs] = useState(false);
   const { userName, companion } = useCompanion();
 
@@ -137,10 +168,10 @@ export function Dashboard({
             <ArabesqueDivider />
           </div>
           <p className="mt-1 font-serif text-[18px] leading-snug text-[var(--color-cream)]">
-            "{verseOfTheDay.text}"
+            "{dbVerse ? dbVerse.verse_text : 'Loading verse...'}"
           </p>
           <p className="mt-2 text-xs font-medium text-[var(--color-gold-1)] font-display tracking-wider">
-            — {verseOfTheDay.reference}
+            — {dbVerse ? dbVerse.verse_reference : '...'}
           </p>
 
           <div className="mt-4 rounded-2xl bg-[var(--tint-soft)] p-3 ring-1 ring-[var(--color-line)]">
@@ -148,7 +179,7 @@ export function Dashboard({
               Context
             </p>
             <p className="mt-1 text-[12px] leading-relaxed text-[var(--color-bronze)]">
-              {verseOfTheDay.context}
+              {dbVerse ? dbVerse.verse_context : '...'}
             </p>
           </div>
 
@@ -157,7 +188,7 @@ export function Dashboard({
               Reflect
             </p>
             <p className="mt-1 text-[12px] italic leading-relaxed text-[var(--color-cream)] font-serif">
-              {verseOfTheDay.reflection}
+              {dbVerse ? dbVerse.verse_reflection : '...'}
             </p>
             <button
               onClick={() => {
@@ -192,17 +223,18 @@ export function Dashboard({
             Daily Challenge
           </p>
           <span className="rounded-full bg-[var(--tint)] px-2 py-0.5 text-[10px] font-medium text-[var(--color-bronze)] ring-1 ring-[var(--color-line)]">
-            {dailyChallenge.category} · {dailyChallenge.estimatedMinutes} min
+            {dbChallenge ? dbChallenge.category : '...'} · {dbChallenge ? dbChallenge.estimated_minutes : '0'} min
           </span>
         </div>
         <h3 className="mt-2 font-display text-[17px] tracking-wide text-[var(--color-gold-1)]">
-          {dailyChallenge.title}
+          {dbChallenge ? dbChallenge.title : 'Loading challenge...'}
         </h3>
         <p className="mt-1 text-[13px] leading-relaxed text-[var(--color-cream)]/85">
-          {dailyChallenge.description}
+          {dbChallenge ? dbChallenge.description : 'Please wait...'}
         </p>
         <p className="mt-2 text-[11px] italic text-[var(--color-bronze)]">
-          Tied to today's verse · {dailyChallenge.tiedTo}
+          Tied to today's verse · {dbChallenge ? dbChallenge.tied_to : '...'}
+        
         </p>
         <button
           onClick={() => {
@@ -334,7 +366,7 @@ export function Dashboard({
         </button>
       </section>
 
-      {/* Church pulse */}
+{/* Church pulse */}
       <section className="relative mx-6 mt-4 overflow-hidden rounded-3xl bg-[var(--color-feature)] p-4 text-[var(--feature-fg)] shadow-lg ring-1 ring-[var(--color-gold-4)]">
         <MashrabiyaBg />
         <div className="relative">
@@ -345,12 +377,12 @@ export function Dashboard({
             <Lozenge width={12} height={12} className="text-[var(--color-gold-2)]" />
           </div>
           <p className="mt-1 text-[11px] text-[var(--feature-fg-muted)]">
-            Across {churchPulse.congregations} congregations
+            Across {dbPulse ? dbPulse.congregations : '...'} congregations
           </p>
           <div className="mt-3 grid grid-cols-3 gap-2">
-            <Stat n={churchPulse.prayersOfferedToday.toLocaleString()} label="🤲 prayers" />
-            <Stat n={churchPulse.praisesOfferedToday.toString()} label="🙌 praises" />
-            <Stat n={churchPulse.activeMembers.toString()} label="walking" />
+            <Stat n={dbPulse ? dbPulse.prayers_offered_today.toLocaleString() : '...'} label="🤲 prayers" />
+            <Stat n={dbPulse ? dbPulse.praises_offered_today.toString() : '...'} label="🙌 praises" />
+            <Stat n={dbPulse ? dbPulse.active_members.toString() : '...'} label="walking" />
           </div>
           <p className="mt-3 text-[11px] italic text-[var(--color-gold-1)]/80">
             You are part of {prayersOffered} of those prayers this month.

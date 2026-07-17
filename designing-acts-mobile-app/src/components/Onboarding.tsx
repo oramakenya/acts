@@ -25,9 +25,11 @@ import {
   faithLevels,
   bibleLevels,
   communityStatuses,
+  languageLevels, // <-- ADDED THIS
   type FaithLevel,
   type BibleLevel,
   type CommunityStatus,
+  type LanguageLevel, // <-- ADDED THIS
 } from "../data/faith";
 
 type Step = {
@@ -36,10 +38,19 @@ type Step = {
   subtitle: string;
   body: string;
   accent: React.ReactNode;
-  custom?: "welcome" | "companion" | "faithJourney";
+  custom?: "auth" | "welcome" | "companion" | "faithJourney";
 };
 
 const steps: Step[] = [
+  // --- NEW AUTHENTICATION STEP ---
+  {
+    badge: "Account",
+    title: "Join the Body",
+    subtitle: "Sign in or create your account.",
+    body: "Your progress, journal, and community ties are saved securely.",
+    accent: <LockIcon width={36} height={36} />,
+    custom: "auth",
+  },
   {
     badge: "Welcome to",
     title: "ACTS",
@@ -127,7 +138,10 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     setBibleLevel,
     communityStatus,
     setCommunityStatus,
+    languageLevel,     // <-- ADDED THIS
+    setLanguageLevel,  // <-- ADDED THIS
   } = useFaith();
+  
   const step = steps[i];
   const isLast = i === steps.length - 1;
 
@@ -168,7 +182,9 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
           {/* Scrollable content area — keeps the next-arrow always visible */}
           <div className="relative -mx-1 flex-1 overflow-y-auto px-1 pr-2">
-            {step.custom === "welcome" ? (
+            {step.custom === "auth" ? (
+              <AuthStep onComplete={advance} />
+            ) : step.custom === "welcome" ? (
               <WelcomeContent />
             ) : step.custom === "companion" ? (
               <CompanionPicker
@@ -188,6 +204,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
                 setBibleLevel={setBibleLevel}
                 communityStatus={communityStatus}
                 setCommunityStatus={setCommunityStatus}
+                languageLevel={languageLevel}       // <-- ADDED THIS
+                setLanguageLevel={setLanguageLevel} // <-- ADDED THIS
                 onComplete={advance}
               />
             ) : (
@@ -197,11 +215,11 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
           <div className="relative pt-4">
             <div className="flex items-center justify-between">
-              <div className="flex gap-1.5">
+              <div className="flex gap-1.5 flex-wrap w-2/3">
                 {steps.map((_, j) => (
                   <span
                     key={j}
-                    className={`h-1.5 rounded-full transition-all ${
+                    className={`h-1.5 rounded-full transition-all mt-1 ${
                       j === i
                         ? "w-6 bg-[var(--color-gold-2)]"
                         : "w-1.5 bg-[var(--color-gold-4)]/50"
@@ -211,7 +229,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
               </div>
               <button
                 onClick={advance}
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-gold-2)] text-[var(--on-accent)] ring-1 ring-[var(--color-gold-1)] active:scale-95"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-gold-2)] text-[var(--on-accent)] ring-1 ring-[var(--color-gold-1)] active:scale-95"
               >
                 <ArrowRight width={18} height={18} />
               </button>
@@ -237,6 +255,117 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     </div>
   );
 }
+
+// ─────────────────────────────────────────────────────────
+// Authentication Step (Login / Signup)
+// ─────────────────────────────────────────────────────────
+
+function AuthStep({ onComplete }: { onComplete: () => void }) {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  // In a real app, this is where you call Supabase signInWithPassword or signUp
+  function handleAuth() {
+    console.log(isLogin ? "Logging in..." : "Signing up...", { email, password });
+    // After successful auth, move to the next screen:
+    onComplete(); 
+  }
+
+  return (
+    <div className="relative mt-5 flex flex-1 flex-col">
+      <h2 className="font-display text-[28px] tracking-wide leading-tight text-gold-grad">
+        {isLogin ? "Welcome Back" : "Create Account"}
+      </h2>
+      <div className="mt-2 text-[var(--feature-deep-gold)]">
+        <ArabesqueDivider width={180} />
+      </div>
+      
+      <div className="mt-5 space-y-4">
+        {/* Email Input */}
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--feature-deep-gold)]">
+            Email Address
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className="mt-1 w-full rounded-2xl bg-[var(--feature-tint)] p-3 text-[13px] font-medium text-[var(--feature-fg)] outline-none ring-1 ring-[var(--feature-line)] focus:ring-[var(--color-gold-2)]"
+          />
+        </div>
+
+        {/* Password Input with Toggle */}
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--feature-deep-gold)]">
+            Password
+          </label>
+          <div className="relative mt-1">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              className="w-full rounded-2xl bg-[var(--feature-tint)] p-3 pr-12 text-[13px] font-medium text-[var(--feature-fg)] outline-none ring-1 ring-[var(--feature-line)] focus:ring-[var(--color-gold-2)]"
+            />
+            {/* The Eye Button */}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[var(--feature-deep-gold)] hover:text-[var(--color-gold-1)] transition-colors"
+            >
+              {showPassword ? (
+                // Eye Open Icon (Hide Password)
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              ) : (
+                // Eye Closed Icon (Show Password)
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              )}
+            </button>
+          </div>
+          
+          {/* Forgot Password Link - Only show on Login view */}
+          {isLogin && (
+            <div className="mt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => window.location.href = '/forgot-password'}
+                className="text-[11px] text-[var(--feature-deep-gold)] hover:text-[var(--color-gold-2)] underline transition-colors"
+              >
+                Forgot your password?
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <button
+          onClick={handleAuth}
+          className="w-full rounded-2xl bg-[var(--color-gold-2)] py-3 text-[13px] font-semibold text-[var(--on-accent)] ring-1 ring-[var(--color-gold-1)] active:scale-[0.98] transition-transform"
+        >
+          {isLogin ? "Sign In" : "Create Account"}
+        </button>
+      </div>
+
+      {/* Toggle between Sign In and Sign Up */}
+      <div className="mt-4 text-center">
+        <button
+          onClick={() => setIsLogin(!isLogin)}
+          className="text-[11px] text-[var(--feature-fg-muted)] hover:text-[var(--color-gold-2)] transition-colors"
+        >
+          {isLogin ? "New here? Create an account." : "Already have an account? Sign in."}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// Original Components Below
+// ─────────────────────────────────────────────────────────
 
 function WelcomeContent() {
   return (
@@ -374,10 +503,6 @@ function CompanionPicker({
    );
  }
 
-// ─────────────────────────────────────────────────────────
-// Faith Journey Step
-// ─────────────────────────────────────────────────────────
-
 function FaithJourneyStep({
   userName,
   companionName,
@@ -388,6 +513,8 @@ function FaithJourneyStep({
   setBibleLevel,
   communityStatus,
   setCommunityStatus,
+  languageLevel,     // <-- ADDED THIS
+  setLanguageLevel,  // <-- ADDED THIS
   onComplete,
 }: {
   userName: string;
@@ -399,13 +526,13 @@ function FaithJourneyStep({
   setBibleLevel: (l: BibleLevel) => void;
   communityStatus: CommunityStatus | null;
   setCommunityStatus: (s: CommunityStatus) => void;
+  languageLevel: LanguageLevel | null;          // <-- ADDED THIS
+  setLanguageLevel: (l: LanguageLevel) => void; // <-- ADDED THIS
   onComplete: () => void;
 }) {
-  // 3-question mini-wizard — auto-advance on each pick.
   const [q, setQ] = useState(0);
   const topRef = useRef<HTMLDivElement>(null);
 
-  // Scroll the question into view when q changes
   useEffect(() => {
     topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [q]);
@@ -416,8 +543,6 @@ function FaithJourneyStep({
     isLast: boolean
   ) {
     setter(value);
-    // After a short pause so the user sees the selection register,
-    // either move to the next question or complete the step.
     window.setTimeout(() => {
       if (isLast) {
         onComplete();
@@ -430,13 +555,12 @@ function FaithJourneyStep({
   return (
     <div ref={topRef} className="relative mt-5 flex flex-1 flex-col">
       <h2 className="font-display text-[22px] tracking-wide leading-tight text-gold-grad">
-        Where are you, {userName}?
+        Where are you, {userName || "friend"}?
       </h2>
       <div className="mt-2 text-[var(--feature-deep-gold)]">
         <ArabesqueDivider width={180} />
       </div>
 
-      {/* Companion warmth */}
       <div className="mt-3 flex items-start gap-2 rounded-2xl bg-[var(--color-gold-2)]/10 px-3 py-2 ring-1 ring-[var(--color-gold-3)]">
         <span className="text-base">{companionEmoji}</span>
         <p className="text-[11px] italic leading-snug text-[var(--feature-fg)]/85 font-serif">
@@ -444,9 +568,9 @@ function FaithJourneyStep({
         </p>
       </div>
 
-      {/* Mini progress dots for the 3 questions */}
       <div className="mt-4 flex items-center justify-center gap-1.5">
-        {[0, 1, 2].map((j) => (
+        {/* CHANGED THIS array to include 4 steps */}
+        {[0, 1, 2, 3].map((j) => (
           <span
             key={j}
             className={`h-1 rounded-full transition-all ${
@@ -460,10 +584,10 @@ function FaithJourneyStep({
         ))}
       </div>
 
-      {/* Show one question at a time — auto-advances on selection */}
+      {/* UPDATED eyebrow text for all questions from 'of 3' to 'of 4' */}
       {q === 0 && (
         <FaithSelector<FaithLevel>
-          eyebrow="1 of 3 · Your relationship with God"
+          eyebrow="1 of 4 · Your relationship with God"
           question="Which describes where you are?"
           options={faithLevels}
           selected={faithLevel}
@@ -472,7 +596,7 @@ function FaithJourneyStep({
       )}
       {q === 1 && (
         <FaithSelector<BibleLevel>
-          eyebrow="2 of 3 · Your familiarity with the Bible"
+          eyebrow="2 of 4 · Your familiarity with the Bible"
           question="How well do you know Scripture?"
           options={bibleLevels}
           selected={bibleLevel}
@@ -481,11 +605,21 @@ function FaithJourneyStep({
       )}
       {q === 2 && (
         <FaithSelector<CommunityStatus>
-          eyebrow="3 of 3 · Your community"
+          eyebrow="3 of 4 · Your community"
           question="Are you walking with other believers?"
           options={communityStatuses}
           selected={communityStatus}
-          onSelect={(v) => handleSelect(setCommunityStatus, v, true)}
+          onSelect={(v) => handleSelect(setCommunityStatus, v, false)} // <-- CHANGED to false
+        />
+      )}
+      {/* ADDED THIS entirely new block for the language question */}
+      {q === 3 && (
+        <FaithSelector<LanguageLevel>
+          eyebrow="4 of 4 · Reading Experience"
+          question="How deep should we go with terminology?"
+          options={languageLevels}
+          selected={languageLevel}
+          onSelect={(v) => handleSelect(setLanguageLevel, v, true)} // <-- true because it's the last one
         />
       )}
 
@@ -553,7 +687,6 @@ function FaithSelector<T extends string>({
         })}
       </div>
 
-      {/* Description of the selected option */}
       {selectedOption && (
         <div className="mt-2 rounded-2xl bg-[var(--feature-tint)] p-3 ring-1 ring-[var(--color-gold-3)]">
           <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--feature-deep-gold)]">
