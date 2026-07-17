@@ -269,3 +269,102 @@ export const languageLevels: LanguageLevelOption[] = [
     description: "We won't hold back. Expect historical context, original Greek/Hebrew references, and deep theological terminology."
   }
 ];
+
+// ─────────────────────────────────────────────────────────
+// VALIDATION HELPERS — type guards for safe localStorage reads
+// ─────────────────────────────────────────────────────────
+
+/**
+ * Type guard for FaithLevel — validates string against allowed union members.
+ * Use when reading from localStorage, URL params, or any untrusted source.
+ */
+export function isFaithLevel(v: string): v is FaithLevel {
+  return (
+    v === "exploring" ||
+    v === "atheist" ||
+    v === "agnostic" ||
+    v === "spiritual" ||
+    v === "new" ||
+    v === "returning" ||
+    v === "growing" ||
+    v === "mature"
+  );
+}
+
+/**
+ * Type guard for BibleLevel.
+ */
+export function isBibleLevel(v: string): v is BibleLevel {
+  return (
+    v === "never" ||
+    v === "browsed" ||
+    v === "occasional" ||
+    v === "regular" ||
+    v === "daily" ||
+    v === "studied"
+  );
+}
+
+/**
+ * Type guard for CommunityStatus.
+ */
+export function isCommunityStatus(v: string): v is CommunityStatus {
+  return (
+    v === "none" ||
+    v === "looking" ||
+    v === "small-group" ||
+    v === "online" ||
+    v === "church" ||
+    v === "leading"
+  );
+}
+
+/**
+ * Type guard for LanguageLevel.
+ */
+export function isLanguageLevel(v: string): v is LanguageLevel {
+  return v === "simple" || v === "standard" || v === "theological";
+}
+
+/**
+ * Generic validator factory — creates a type guard from an array of allowed values.
+ * Useful for enums/options defined as arrays (e.g., companions).
+ */
+export function createValidator<T extends string>(allowed: readonly T[]): (v: string) => v is T {
+  const set = new Set(allowed);
+  return (v: string): v is T => set.has(v as T);
+}
+
+/**
+ * Safe read from localStorage with validation.
+ * Returns null if missing, invalid, or SSR.
+ */
+export function readStored<T>(
+  key: string,
+  validator: (v: string) => v is T
+): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (raw && validator(raw)) return raw;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Safe write to localStorage. Handles null (removes key) and quota errors.
+ */
+export function writeStored(key: string, value: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (value === null) {
+      window.localStorage.removeItem(key);
+    } else {
+      window.localStorage.setItem(key, value);
+    }
+  } catch {
+    // quota exceeded, private browsing, etc. — swallow silently
+  }
+}

@@ -1,98 +1,125 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-// Ensure LanguageLevel is defined in your faith.ts data file!
-import type { FaithLevel, BibleLevel, CommunityStatus, LanguageLevel } from "../data/faith"; 
 
-type Ctx = {
+import type {
+  FaithLevel,
+  BibleLevel,
+  CommunityStatus,
+  LanguageLevel,
+} from "../data/faith";
+
+import {
+  isFaithLevel,
+  isBibleLevel,
+  isCommunityStatus,
+  isLanguageLevel,
+  readStored,
+  writeStored,
+} from "../data/faith";
+
+/**
+ * Context shape — setters accept BOTH values AND updater functions
+ * (matches React.Dispatch<React.SetStateAction<T>>)
+ */
+type Setter<T> = (value: T | null | ((prev: T | null) => T | null)) => void;
+
+type FaithCtx = {
   faithLevel: FaithLevel | null;
-  setFaithLevel: (l: FaithLevel) => void;
+  setFaithLevel: Setter<FaithLevel>;
   bibleLevel: BibleLevel | null;
-  setBibleLevel: (l: BibleLevel) => void;
+  setBibleLevel: Setter<BibleLevel>;
   communityStatus: CommunityStatus | null;
-  setCommunityStatus: (s: CommunityStatus) => void;
-  
-  // Language Level types
+  setCommunityStatus: Setter<CommunityStatus>;
   languageLevel: LanguageLevel | null;
-  setLanguageLevel: (l: LanguageLevel) => void;
+  setLanguageLevel: Setter<LanguageLevel>;
 };
 
-const FaithCtx = createContext<Ctx>({
-  faithLevel: null,
-  setFaithLevel: () => {},
-  bibleLevel: null,
-  setBibleLevel: () => {},
-  communityStatus: null,
-  setCommunityStatus: () => {},
-  
-  // Default context values
-  languageLevel: null,
-  setLanguageLevel: () => {},
-});
+/**
+ * Default context — throws in dev if used outside provider,
+ * no-ops in prod (fail-closed for type safety).
+ */
+function createDefaultContext(): FaithCtx {
+  const noop = () => {
+    if (import.meta.env.DEV) {
+      throw new Error("useFaith must be used within a FaithProvider");
+    }
+  };
+  return {
+    faithLevel: null,
+    setFaithLevel: noop,
+    bibleLevel: null,
+    setBibleLevel: noop,
+    communityStatus: null,
+    setCommunityStatus: noop,
+    languageLevel: null,
+    setLanguageLevel: noop,
+  };
+}
+
+const FaithCtx = createContext<FaithCtx>(createDefaultContext());
+
+/**
+ * LocalStorage keys — consistent `{domain}.{field}` pattern.
+ * Easy to migrate/debug; all four onboarding fields now persisted.
+ */
+const LS_KEYS = {
+  faithLevel: "acts.faithLevel",
+  bibleLevel: "acts.bibleLevel",
+  communityStatus: "acts.communityStatus",
+  languageLevel: "acts.languageLevel",
+} as const;
 
 export function FaithProvider({ children }: { children: ReactNode }) {
-  const [faithLevel, setFaithLevel] = useState<FaithLevel | null>(() => {
-    if (typeof window === "undefined") return null;
-    return (window.localStorage?.getItem("acts.faithLevel") as FaithLevel) || null;
-  });
-  const [bibleLevel, setBibleLevel] = useState<BibleLevel | null>(() => {
-    if (typeof window === "undefined") return null;
-    return (window.localStorage?.getItem("acts.bibleLevel") as BibleLevel) || null;
-  });
-  const [communityStatus, setCommunityStatus] = useState<CommunityStatus | null>(() => {
-    if (typeof window === "undefined") return null;
-    return (window.localStorage?.getItem("acts.communityStatus") as CommunityStatus) || null;
-  });
-  
-  // Language level state initializer (Defaults to null until they choose, or you can default to "standard")
-  const [languageLevel, setLanguageLevel] = useState<LanguageLevel | null>(() => {
-    if (typeof window === "undefined") return null;
-    return (window.localStorage?.getItem("acts.languageLevel") as LanguageLevel) || null;
-  });
+  // ── Lazy initializers (run once, SSR-safe) ──────────────────────
+  const [faithLevel, setFaithLevel] = useState<FaithLevel | null>(() =>
+    readStored(LS_KEYS.faithLevel, isFaithLevel)
+  );
+  const [bibleLevel, setBibleLevel] = useState<BibleLevel | null>(() =>
+    readStored(LS_KEYS.bibleLevel, isBibleLevel)
+  );
+  const [communityStatus, setCommunityStatus] = useState<CommunityStatus | null>(
+    () => readStored(LS_KEYS.communityStatus, isCommunityStatus)
+  );
+  const [languageLevel, setLanguageLevel] = useState<LanguageLevel | null>(() =>
+    readStored(LS_KEYS.languageLevel, isLanguageLevel)
+  );
 
-  useEffect(() => {
-    if (faithLevel) {
-      try { window.localStorage?.setItem("acts.faithLevel", faithLevel); } catch {}
-    }
-  }, [faithLevel]);
-  
-  useEffect(() => {
-    if (bibleLevel) {
-      try { window.localStorage?.setItem("acts.bibleLevel", bibleLevel); } catch {}
-    }
-  }, [bibleLevel]);
-  
-  useEffect(() => {
-    if (communityStatus) {
-      try { window.localStorage?.setItem("acts.communityStatus", communityStatus); } catch {}
-    }
-  }, [communityStatus]);
+  // ── Sync to localStorage (handles null = clear) ─────────────────
+  useEffect(() => writeStored(LS_KEYS.faithLevel, faithLevel), [faithLevel]);
+  useEffect(() => writeStored(LS_KEYS.bibleLevel, bibleLevel), [bibleLevel]);
+  useEffect(() =>
+    writeStored(LS_KEYS.communityStatus, communityStatus),
+    [communityStatus]
+  );
+  useEffect(() =>
+    writeStored(LS_KEYS.languageLevel, languageLevel),
+    [languageLevel]
+  );
 
-  // Language level localStorage sync
-  useEffect(() => {
-    if (languageLevel) {
-      try { window.localStorage?.setItem("acts.languageLevel", languageLevel); } catch {}
-    }
-  }, [languageLevel]);
+  // ── Expose context value ────────────────────────────────────────
+  const value: FaithCtx = {
+    faithLevel,
+    setFaithLevel,
+    bibleLevel,
+    setBibleLevel,
+    communityStatus,
+    setCommunityStatus,
+    languageLevel,
+    setLanguageLevel,
+  };
 
   return (
-    <FaithCtx.Provider
-      value={{
-        faithLevel,
-        setFaithLevel,
-        bibleLevel,
-        setBibleLevel,
-        communityStatus,
-        setCommunityStatus,
-        // Expose to the app
-        languageLevel,
-        setLanguageLevel,
-      }}
-    >
-      {children}
-    </FaithCtx.Provider>
+    <FaithCtx.Provider value={value}>{children}</FaithCtx.Provider>
   );
 }
 
-export function useFaith() {
-  return useContext(FaithCtx);
+/**
+ * Hook — throws helpful error in dev if provider missing.
+ */
+export function useFaith(): FaithCtx {
+  const ctx = useContext(FaithCtx);
+  if (import.meta.env.DEV && !ctx) {
+    throw new Error("useFaith must be used within a FaithProvider");
+  }
+  return ctx;
 }
