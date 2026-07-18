@@ -514,7 +514,7 @@ interface FaithSelectorProps<T extends string> {
   onSelect: (id: T) => void;
 }
 
-function FaithSelector<T extends string>({
+export function FaithSelector<T extends string>({
   eyebrow,
   question,
   options,
