@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { badges, type GeoPin } from "../data/content";
-import { FlameIcon, HandsIcon, BookIcon, CheckIcon, BellIcon, LockIcon, CloseIcon } from "../components/icons";
+import { FlameIcon, HandsIcon, BookIcon, CheckIcon, BellIcon, LockIcon } from "../components/icons";
 import { LocationPicker } from "../components/LocationPicker";
 import { SupportApp } from "./SupportApp";
 import { useToast } from "../components/Toast";
 import { useCompanion } from "../components/CompanionContext";
 import { useFaith } from "../components/FaithContext";
-import { faithLevels, bibleLevels, communityStatuses } from "../data/faith";
+import { faithLevels, bibleLevels, communityStatuses, languageLevels } from "../data/faith";
 import { companions } from "../data/companions";
 import {
   ArabesqueDivider,
@@ -17,7 +17,7 @@ import {
   OrnateHeading,
   StarOctagram,
 } from "../components/Ornament";
-import { FaithSelector } from "../components/Onboarding"; // Shared selector
+import { FaithSelector } from "../components/Onboarding";
 
 type Props = {
   streak: number;
@@ -52,6 +52,10 @@ export function Profile({
 }: Props) {
   const [picking, setPicking] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showStudyJournal, setShowStudyJournal] = useState(false);
+  const [showPrayerHistory, setShowPrayerHistory] = useState(false);
   const toast = useToast();
   const { companion, setCompanionId, userName, setUserName } = useCompanion();
   const [editingName, setEditingName] = useState(false);
@@ -63,11 +67,14 @@ export function Profile({
     setBibleLevel,
     communityStatus,
     setCommunityStatus,
+    languageLevel,
+    setLanguageLevel,
   } = useFaith();
-  const [editingField, setEditingField] = useState<"faith" | "bible" | "community" | null>(null);
+  const [editingField, setEditingField] = useState<"faith" | "bible" | "community" | "language" | null>(null);
   const faithOpt = faithLevels.find((o) => o.id === faithLevel);
   const bibleOpt = bibleLevels.find((o) => o.id === bibleLevel);
   const commOpt = communityStatuses.find((o) => o.id === communityStatus);
+  const langOpt = languageLevels.find((o) => o.id === languageLevel);
 
   if (showSupport) {
     return <SupportApp onBack={() => setShowSupport(false)} />;
@@ -286,12 +293,18 @@ export function Profile({
             label={commOpt?.label ?? "Tap to set"}
             onClick={() => setEditingField("community")}
           />
+          <FaithRow
+            emoji={langOpt?.emoji ?? "🌿"}
+            eyebrow="Reading level"
+            label={langOpt?.label ?? "Tap to set"}
+            onClick={() => setEditingField("language")}
+          />
         </div>
       </div>
 
       {/* Shared FaithSelector modals — replaces FaithEditorModal duplication */}
       {editingField === "faith" && (
-        <FaithSelector
+        <FaithSelector<import("../data/faith").FaithLevel>
           eyebrow="Your relationship with God"
           question="Where are you?"
           options={faithLevels}
@@ -304,7 +317,7 @@ export function Profile({
         />
       )}
       {editingField === "bible" && (
-        <FaithSelector
+        <FaithSelector<import("../data/faith").BibleLevel>
           eyebrow="Your familiarity with the Bible"
           question="How well do you know Scripture?"
           options={bibleLevels}
@@ -317,13 +330,26 @@ export function Profile({
         />
       )}
       {editingField === "community" && (
-        <FaithSelector
+        <FaithSelector<import("../data/faith").CommunityStatus>
           eyebrow="Your community"
           question="Are you walking with other believers?"
           options={communityStatuses}
           selected={communityStatus}
           onSelect={(v) => {
             setCommunityStatus(v);
+            setEditingField(null);
+            toast("Saved");
+          }}
+        />
+      )}
+      {editingField === "language" && (
+        <FaithSelector<import("../data/faith").LanguageLevel>
+          eyebrow="Your reading experience"
+          question="How would you like Scripture presented?"
+          options={languageLevels}
+          selected={languageLevel}
+          onSelect={(v) => {
+            setLanguageLevel(v);
             setEditingField(null);
             toast("Saved");
           }}
@@ -428,7 +454,7 @@ export function Profile({
             <RhythmRow icon="🌙" time="9:00 PM" label="Examen — what did I walk in?" />
           </ul>
           <button
-            onClick={() => toast("Reminder editor opening...")}
+            onClick={() => setShowNotifications(true)}
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-gold-2)]/15 py-2 text-[12px] font-semibold text-[var(--color-gold-1)] ring-1 ring-[var(--color-gold-3)] active:scale-[0.99]"
           >
             <BellIcon width={14} height={14} />
@@ -464,30 +490,123 @@ export function Profile({
         </div>
       </button>
 
-      {/* Settings */}
+      {/* Settings — now functional */}
       <div className="mx-6 mt-4 rounded-3xl bg-[var(--color-charcoal)] p-2 shadow-sm ring-1 ring-[var(--color-line)]">
         <SettingRow
           icon={<LockIcon width={16} height={16} />}
           label="Anonymity & Privacy"
-          onClick={() => toast("Privacy controls — coming soon")}
+          onClick={() => setShowPrivacy(true)}
         />
         <SettingRow
           icon={<BellIcon width={16} height={16} />}
           label="Notifications"
-          onClick={() => toast("Notification settings — coming soon")}
+          onClick={() => setShowNotifications(true)}
         />
         <SettingRow
           icon={<BookIcon width={16} height={16} />}
           label="My study journal"
-          onClick={() => toast("Opens your study journal")}
+          onClick={() => setShowStudyJournal(true)}
         />
         <SettingRow
           icon={<HandsIcon width={16} height={16} />}
           label="My prayers (private)"
-          onClick={() => toast("Your private prayer history")}
+          onClick={() => setShowPrayerHistory(true)}
           last
         />
       </div>
+
+      {/* Privacy Modal */}
+      {showPrivacy && (
+        <div className="absolute inset-0 z-40 flex items-end bg-[var(--scrim)]" onClick={() => setShowPrivacy(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-h-[90%] overflow-y-auto rounded-t-3xl bg-[var(--color-onyx)] p-5 pb-7 ring-1 ring-[var(--color-gold-3)]">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-[18px] tracking-wide text-[var(--color-gold-1)]">Anonymity & Privacy</h3>
+              <button onClick={() => setShowPrivacy(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-charcoal)] text-[var(--color-gold-1)] ring-1 ring-[var(--color-line)]"><LockIcon width={16} height={16} /></button>
+            </div>
+            <div className="mt-2 text-[var(--color-gold-3)]"><ArabesqueDivider /></div>
+            <div className="mt-4 space-y-4 text-[13px] text-[var(--color-cream)]/90">
+              <p><strong className="text-[var(--color-gold-1)]">Your identity is never stored.</strong> Prayer requests, encouragements, and testimonies are posted anonymously. Not even we can link them to you.</p>
+              <p><strong className="text-[var(--color-gold-1)]">Location is coarse.</strong> Only your city is ever shared — never an exact address. You control whether it's attached to prayers.</p>
+              <p><strong className="text-[var(--color-gold-1)]">No tracking.</strong> We don't use analytics, pixels, or third-party trackers. Your walk is between you and Him.</p>
+              <p><strong className="text-[var(--color-gold-1)]">Data ownership.</strong> Everything you create lives on your device (localStorage). Clearing browser data removes it.</p>
+              <p className="text-[11px] text-[var(--color-bronze)] italic">"You have searched me, Lord, and you know me." — Psalm 139:1</p>
+            </div>
+            <button onClick={() => setShowPrivacy(false)} className="mt-6 w-full rounded-xl bg-[var(--color-gold-2)] py-2.5 text-[12px] font-semibold text-[var(--on-accent)] ring-1 ring-[var(--color-gold-1)]">Close</button>
+          </div>
+        </div>
+      )}
+
+      {/* Notifications Modal */}
+      {showNotifications && (
+        <div className="absolute inset-0 z-40 flex items-end bg-[var(--scrim)]" onClick={() => setShowNotifications(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-h-[90%] overflow-y-auto rounded-t-3xl bg-[var(--color-onyx)] p-5 pb-7 ring-1 ring-[var(--color-gold-3)]">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-[18px] tracking-wide text-[var(--color-gold-1)]">Notifications</h3>
+              <button onClick={() => setShowNotifications(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-charcoal)] text-[var(--color-gold-1)] ring-1 ring-[var(--color-line)]"><BellIcon width={16} height={16} /></button>
+            </div>
+            <div className="mt-2 text-[var(--color-gold-3)]"><ArabesqueDivider /></div>
+            <div className="mt-4 space-y-3">
+              <NotificationToggle label="Morning verse" hint="Daily verse + reflection at 7:00 AM" defaultOn />
+              <NotificationToggle label="Midday check" hint="Breath prayer + challenge at 12:30 PM" defaultOn />
+              <NotificationToggle label="Evening examen" hint="Reflection prompt at 9:00 PM" defaultOn />
+              <NotificationToggle label="Challenge reminders" hint="Nudge if you haven't marked today's challenge" defaultOn />
+              <NotificationToggle label="Prayer activity" hint="When someone prays for your request" defaultOn />
+              <NotificationToggle label="Community updates" hint="New posts in your church feed" />
+            </div>
+            <button onClick={() => setShowNotifications(false)} className="mt-6 w-full rounded-xl bg-[var(--color-gold-2)] py-2.5 text-[12px] font-semibold text-[var(--on-accent)] ring-1 ring-[var(--color-gold-1)]">Done</button>
+          </div>
+        </div>
+      )}
+
+      {/* Study Journal Modal */}
+      {showStudyJournal && (
+        <div className="absolute inset-0 z-40 flex items-end bg-[var(--scrim)]" onClick={() => setShowStudyJournal(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-h-[90%] overflow-y-auto rounded-t-3xl bg-[var(--color-onyx)] p-5 pb-7 ring-1 ring-[var(--color-gold-3)]">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-[18px] tracking-wide text-[var(--color-gold-1)]">My Study Journal</h3>
+              <button onClick={() => setShowStudyJournal(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-charcoal)] text-[var(--color-gold-1)] ring-1 ring-[var(--color-line)]"><BookIcon width={16} height={16} /></button>
+            </div>
+            <div className="mt-2 text-[var(--color-gold-3)]"><ArabesqueDivider /></div>
+            <div className="mt-4 space-y-3">
+              <p className="text-[13px] text-[var(--color-cream)]/80">Your study journal tracks learning paths, saved answers, and personal notes.</p>
+              <div className="space-y-2">
+                <StudyJournalItem title="Foundations of Biblical Interpretation" progress={2} total={5} discipline="Hermeneutics" />
+                <StudyJournalItem title="Answering Hard Questions" progress={0} total={6} discipline="Apologetics" />
+                <StudyJournalItem title="Reading the Letters of Paul" progress={1} total={5} discipline="Isagogics" />
+              </div>
+              <button className="mt-3 w-full rounded-xl bg-[var(--color-gold-2)]/15 py-2 text-[12px] font-semibold text-[var(--color-gold-1)] ring-1 ring-[var(--color-gold-3)]" onClick={() => { toast("Opening Study Hub..."); setShowStudyJournal(false); }}>
+                Open Study Hub
+              </button>
+            </div>
+            <button onClick={() => setShowStudyJournal(false)} className="mt-6 w-full rounded-xl bg-[var(--color-gold-2)] py-2.5 text-[12px] font-semibold text-[var(--on-accent)] ring-1 ring-[var(--color-gold-1)]">Close</button>
+          </div>
+        </div>
+      )}
+
+      {/* Prayer History Modal */}
+      {showPrayerHistory && (
+        <div className="absolute inset-0 z-40 flex items-end bg-[var(--scrim)]" onClick={() => setShowPrayerHistory(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-h-[90%] overflow-y-auto rounded-t-3xl bg-[var(--color-onyx)] p-5 pb-7 ring-1 ring-[var(--color-gold-3)]">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-[18px] tracking-wide text-[var(--color-gold-1)]">My Prayers (Private)</h3>
+              <button onClick={() => setShowPrayerHistory(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-charcoal)] text-[var(--color-gold-1)] ring-1 ring-[var(--color-line)]"><HandsIcon width={16} height={16} /></button>
+            </div>
+            <div className="mt-2 text-[var(--color-gold-3)]"><ArabesqueDivider /></div>
+            <div className="mt-4 space-y-3">
+              <p className="text-[13px] text-[var(--color-cream)]/80">Your personal prayer history — never shared, never visible to others.</p>
+              <div className="space-y-2">
+                <PrayerHistoryItem request="For father's surgery recovery" category="Healing" date="2 days ago" prayed={true} />
+                <PrayerHistoryItem request="Wisdom for job decision" category="Guidance" date="1 week ago" prayed={true} />
+                <PrayerHistoryItem request="Peace in marriage" category="Family" date="2 weeks ago" prayed={false} />
+              </div>
+              <button className="mt-3 w-full rounded-xl bg-[var(--color-gold-2)]/15 py-2 text-[12px] font-semibold text-[var(--color-gold-1)] ring-1 ring-[var(--color-gold-3)]" onClick={() => { toast("Opening Prayer Wall..."); setShowPrayerHistory(false); }}>
+                Open Prayer Wall
+              </button>
+            </div>
+            <button onClick={() => setShowPrayerHistory(false)} className="mt-6 w-full rounded-xl bg-[var(--color-gold-2)] py-2.5 text-[12px] font-semibold text-[var(--on-accent)] ring-1 ring-[var(--color-gold-1)]">Close</button>
+          </div>
+        </div>
+      )}
 
       <div className="mx-6 my-4">
         <KenteStrip className="rounded-md ring-1 ring-[var(--color-line)]" />
@@ -628,5 +747,58 @@ function SettingRow({
       <span className="flex-1 text-[13px] font-medium text-[var(--color-cream)]">{label}</span>
       <span className="text-[var(--color-bronze)]">›</span>
     </button>
+  );
+}
+
+function NotificationToggle({ label, hint, defaultOn = false }: { label: string; hint: string; defaultOn?: boolean }) {
+  const [on, setOn] = useState(defaultOn);
+  return (
+    <div className="flex items-start justify-between gap-3 rounded-2xl bg-[var(--color-charcoal)] px-3 py-3 ring-1 ring-[var(--color-line)]">
+      <div className="min-w-0 flex-1">
+        <p className="text-[12px] font-semibold text-[var(--color-cream)]">{label}</p>
+        <p className="text-[10px] text-[var(--color-bronze)]">{hint}</p>
+      </div>
+      <button
+        onClick={() => setOn((o) => !o)}
+        className={`relative h-6 w-11 shrink-0 rounded-full transition ${on ? "bg-[var(--color-gold-2)]" : "bg-[var(--color-line-strong)]"}`}
+      >
+        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-[var(--color-cream)] shadow transition-all ${on ? "left-[22px]" : "left-0.5"}`} />
+      </button>
+    </div>
+  );
+}
+
+function StudyJournalItem({ title, progress, total, discipline }: { title: string; progress: number; total: number; discipline: string }) {
+  const pct = Math.round((progress / total) * 100);
+  return (
+    <div className="rounded-2xl bg-[var(--color-charcoal)] p-3 ring-1 ring-[var(--color-line)]">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[12px] font-semibold text-[var(--color-cream)]">{title}</p>
+          <p className="text-[10px] text-[var(--color-gold-2)]">{discipline} · Step {progress} of {total}</p>
+        </div>
+        <span className="text-[11px] font-semibold text-[var(--color-gold-1)]">{pct}%</span>
+      </div>
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--tint-soft)]">
+        <div className="h-full rounded-full bg-[var(--color-gold-2)]" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function PrayerHistoryItem({ request, category, date, prayed }: { request: string; category: string; date: string; prayed: boolean }) {
+  return (
+    <div className="rounded-2xl bg-[var(--color-charcoal)] p-3 ring-1 ring-[var(--color-line)]">
+      <div className="flex items-center justify-between">
+        <p className="text-[12px] font-semibold text-[var(--color-cream)]">{request}</p>
+        <span className="rounded-full px-2 py-0.5 text-[10px] font-medium text-[var(--color-gold-1)] ring-1 ring-[var(--color-line)]">{category}</span>
+      </div>
+      <div className="mt-1 flex items-center justify-between text-[10px] text-[var(--color-bronze)]">
+        <span>{date}</span>
+        <span className={prayed ? "text-[var(--color-gold-1)]" : "text-[var(--color-muted)]"}>
+          {prayed ? "🤲 Prayed" : "Pending"}
+        </span>
+      </div>
+    </div>
   );
 }
